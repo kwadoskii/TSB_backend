@@ -19,15 +19,10 @@ router.get("/:id", validateObjectId, async (req, res) => {
   if (!tag)
     return res.status(404).send({ status: "error", message: `Tag with ID ${id} not found` });
 
-  return res.status(200).send(tag);
+  return res.status(200).send({ status: "success", data: tag });
 });
 
-router.post("/", [admin, validate(validateTag)], async (req, res) => {
-  let tag = new Tag({ ...req.body });
-  tag = await tag.save();
-
-  return res.status(201).send({ status: "success", data: tag });
-});
+3;
 
 router.patch("/:id", [admin, validateObjectId, validate(validatePatchTag)], async (req, res) => {
   const { id } = req.params;
@@ -41,8 +36,8 @@ router.patch("/:id", [admin, validateObjectId, validate(validatePatchTag)], asyn
 
 router.delete("/:id", [admin, validateObjectId], async (req, res) => {
   const { id } = req.params;
-
   const tag = await Tag.findByIdAndDelete(id);
+
   if (!tag)
     return res.status(404).send({ status: "error", message: `Tag with ID ${id} not found` });
 
