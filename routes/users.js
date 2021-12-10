@@ -7,6 +7,7 @@ import { User, validateUser, validatePatchUser } from "../models/user.js";
 import bcrypt from "bcrypt";
 import updateOptions from "../helpers/updateOptions.js";
 import dot from "dot-object";
+import pick from "lodash/pick.js";
 
 const router = express.Router();
 
@@ -36,7 +37,10 @@ router.post("/", validate(validateUser), async (req, res) => {
   user.password = await bcrypt.hash(req.body.password, salt);
   user = await user.save();
 
-  return res.status(201).send({ status: "success", data: user });
+  return res.status(201).send({
+    status: "success",
+    data: pick(user, ["firstname", "lastname", "username", "email"]),
+  });
 });
 
 router.patch("/:id", [
