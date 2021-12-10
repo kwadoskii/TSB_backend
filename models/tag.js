@@ -20,6 +20,15 @@ const tagSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    image: {
+      type: String,
+      maxlength: 250,
+    },
+    description: {
+      type: String,
+      minlength: 10,
+      maxlength: 255,
+    },
     __v: { type: Number, select: false },
   },
   { timestamps: true }
@@ -31,12 +40,26 @@ const Tag = mongoose.model("Tag", tagSchema);
 
 const validateTag = (tag, options) => {
   const schema = Joi.object({
-    name: Joi.string().min(1).max(50).required().label("Name"),
-    backgroundColor: Joi.string().required().max(8).label("Background Color"),
+    name: Joi.string().min(1).max(50).required().label("Name").trim(),
+    backgroundColor: Joi.string().required().max(8).label("Background Color").trim(),
     textBlack: Joi.boolean(),
+    image: Joi.string().uri().max(250).label("Image").trim(),
+    description: Joi.string().min(10).max(255).trim().label("Description"),
   });
 
   return schema.validate(tag, options);
 };
 
-export { Tag, tagSchema, validateTag };
+const validatePatchTag = (tag, options) => {
+  const schema = Joi.object({
+    name: Joi.string().min(1).max(50).label("Name").trim(),
+    backgroundColor: Joi.string().max(8).label("Background Color").trim(),
+    textBlack: Joi.boolean(),
+    image: Joi.string().uri().max(250).label("Image").trim(),
+    description: Joi.string().min(10).max(255).trim().label("Description"),
+  });
+
+  return schema.validate(tag, options);
+};
+
+export { Tag, tagSchema, validateTag, validatePatchTag };

@@ -3,7 +3,7 @@ import updateOptions from "../helpers/updateOptions.js";
 import admin from "../middlewares/admin.js";
 import validate from "../middlewares/validate.js";
 import validateObjectId from "../middlewares/validateObjectId.js";
-import { Tag, validateTag } from "../models/tag.js";
+import { Tag, validatePatchTag, validateTag } from "../models/tag.js";
 
 const router = express.Router();
 
@@ -29,7 +29,7 @@ router.post("/", [admin, validate(validateTag)], async (req, res) => {
   return res.status(201).send({ status: "success", data: tag });
 });
 
-router.patch("/:id", [admin, validateObjectId, validate(validateTag)], async (req, res) => {
+router.patch("/:id", [admin, validateObjectId, validate(validatePatchTag)], async (req, res) => {
   const { id } = req.params;
   const tag = await Tag.findByIdAndUpdate(id, { ...req.body }, updateOptions);
 
