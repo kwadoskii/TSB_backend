@@ -3,6 +3,7 @@ import error from "../middlewares/error.js";
 import tags from "../routes/tags.js";
 import status from "../routes/status.js";
 import users from "../routes/users.js";
+import posts from "../routes/posts.js";
 
 export default function (app) {
   app.use(express.json());
@@ -11,6 +12,7 @@ export default function (app) {
   app.use("/api/status", status);
   app.use("/api/tags", tags);
   app.use("/api/users", users);
+  app.use("/api/posts", posts);
 
   app.use(error);
 }
