@@ -1,12 +1,8 @@
 import express from "express";
+import statusController from "../controllers/statusController.js";
 
 const router = express.Router();
 
-const status = router.get("/", (_, res) => {
-  return res.status(200).json({
-    status: "success",
-    data: { message: "TSB servers up and running", timestamp: new Date() },
-  });
-});
+router.get("/", statusController.status);
 
-export default status;
+export default router;
