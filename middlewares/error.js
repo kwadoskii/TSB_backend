@@ -3,8 +3,15 @@ export default function error(err, req, res, next) {
   if (err.name === "ValidationError") {
     const formatMessage = err.toString().replace("ValidationError: ", "").replace(":", "");
     return res.status(422).send({
-      status: "Validation error",
+      status: "DB Validation error",
       message: `${formatMessage[0].toUpperCase() + formatMessage.substr(1)}`,
+    });
+  }
+
+  if (err.type === "entity.parse.failed") {
+    return res.status(422).send({
+      status: "Syntax Error",
+      message: err.message,
     });
   }
 
