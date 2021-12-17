@@ -11,7 +11,10 @@ const tagsFields = "-_id name";
 dot.keepArray = true;
 
 const list = async (_, res) => {
-  const posts = await Post.find().sort("createdAt").populate("author", authorFields);
+  const posts = await Post.find()
+    .sort("createdAt")
+    .populate("author", authorFields)
+    .populate("tags", tagsFields);
 
   return res.status(200).send({ status: "success", data: posts });
 };
