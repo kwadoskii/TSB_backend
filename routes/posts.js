@@ -8,6 +8,7 @@ import validateObjectId from "../middlewares/validateObjectId.js";
 import { validateSavedPost } from "../models/savedPost.js";
 import { validatePost, validatePostPatch } from "../models/post.js";
 import { validateReaction } from "../models/reaction.js";
+import { validateComment, validateCommentLike } from "../models/comment.js";
 
 const router = express.Router();
 
@@ -15,6 +16,8 @@ router.get("/", postController.list);
 router.get("/search", postController.search);
 router.post("/save", validate(validateSavedPost), postController.save); //save a post
 router.post("/like", validate(validateReaction), postController.reaction); //like a post
+router.post("/comment", validate(validateComment), postController.comment);
+router.post("/comment/like", validate(validateCommentLike), postController.likeComment);
 router.get("/:id", validateObjectId, postController.show);
 
 // add auth validation middleware here

@@ -4,6 +4,7 @@ import { Post } from "../models/post.js";
 import { SavedPost } from "../models/savedPost.js";
 import updateOptions from "../helpers/updateOptions.js";
 import { Reaction } from "../models/reaction.js";
+import { Comment } from "../models/comment.js";
 
 const authorFields = "firstname middlename lastname username email profileImage";
 const tagsFields = "-_id name";
@@ -95,6 +96,35 @@ const reaction = async (req, res) => {
   return res.status(200).send({ status: "success", message: `Post ${postId} liked.` });
 };
 
+const comment = async (req, res) => {
+  const { userId, postId, comment } = req.body;
+  const newComment = new Comment({ userId, postId, comment });
+
+  await newComment.save();
+
+  return res.status(201).send({ status: "success", message: "Comment added." });
+};
+
+const likeComment = async (req, res) => {
+  const { userId, commentId } = req.body;
+  const comment = await Comment.findById(commentId);
+
+  const liked = comment.likes.filter((id) => userId === id.toString());
+
+  if (liked.length !== 0) {
+    comment.likes = comment.likes.filter((id) => userId !== id.toString());
+    await comment.save();
+
+    return res.status(200).send({ status: "success", message: `Comment ${commentId} unliked.` });
+  }
+
+  comment.likes.push(userId);
+
+  await comment.save();
+
+  return res.status(200).send({ status: "success", message: `Comment ${commentId} liked.` });
+};
+
 export default {
   list,
   show,
@@ -104,4 +134,6 @@ export default {
   search,
   save,
   reaction,
+  comment,
+  likeComment,
 };
