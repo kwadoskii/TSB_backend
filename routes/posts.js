@@ -18,6 +18,8 @@ router.post("/save", validate(validateSavedPost), postController.save); //save a
 router.post("/like", validate(validateReaction), postController.reaction); //like a post
 router.post("/comment", validate(validateComment), postController.comment);
 router.post("/comment/like", validate(validateCommentLike), postController.likeComment);
+router.delete("/comment/:id", [admin, me, validateObjectId], postController.removeComment);
+
 router.get("/:id", validateObjectId, postController.show);
 
 // add auth validation middleware here

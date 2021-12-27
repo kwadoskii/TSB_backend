@@ -128,6 +128,17 @@ const likeComment = async (req, res) => {
   return res.status(200).send({ status: "success", message: `Comment ${commentId} liked.` });
 };
 
+const removeComment = async (req, res) => {
+  const { id } = req.params;
+
+  const comment = await Comment.findByIdAndDelete(id);
+
+  if (!comment)
+    return res.status(404).send({ status: "error", message: `Comment with ID ${id} not found.` });
+
+  return res.status(202).send({ status: "success", message: `Comment with ID ${id} deleted.` });
+};
+
 export default {
   list,
   show,
@@ -139,4 +150,5 @@ export default {
   reaction,
   comment,
   likeComment,
+  removeComment,
 };
