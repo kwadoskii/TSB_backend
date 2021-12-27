@@ -10,6 +10,17 @@ import userController from "../controllers/userController.js";
 const router = express.Router();
 
 router.get("/", userController.list);
+router.get("/tags", [validateObjectId, me], userController.followingTags);
+router.post("/tags/follow", me, userController.followTag);
+router.post("/tags/unfollow", me, userController.unfollowTag);
+
+// user followers and following
+router.post("/follow/:id", [validateObjectId, me], userController.followUser);
+router.post("/unfollow/:id", [validateObjectId, me], userController.unfollowUser);
+
+router.get("/followers", me, userController.followersList);
+router.get("/following", me, userController.followingUsers);
+
 router.get("/:id", validateObjectId, userController.show);
 router.post("/", validate(validateUser), userController.create);
 router.patch("/:id", [admin, me, validate(validatePatchUser)], userController.update);
