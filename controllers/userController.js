@@ -68,7 +68,7 @@ const followingTags = async (req, res) => {
   const { userId } = req.body;
 
   const tags = await followingTag
-    .find({ userId })
+    .findOne({ userId })
     .populate("tagId", "name -_id")
     .select("-userId -createdAt -updatedAt -__v");
 
@@ -76,9 +76,7 @@ const followingTags = async (req, res) => {
     status: "success",
     data: {
       userId,
-      tags: tags.map((t) => {
-        return { _id: t._id, name: t.tagId[0].name };
-      }),
+      tags: tags.tagId,
     },
   });
 };
@@ -86,24 +84,33 @@ const followingTags = async (req, res) => {
 const followTag = async (req, res) => {
   const { userId, tagId } = req.body;
 
-  const followed = await followingTag.find({ userId, tagId });
+  let followed = await followingTag.findOne({ userId });
+  const hasBeenFollowed = followed?.tagId.filter((t) => t.toString() === tagId);
 
-  if (followed)
-    return res.status(404).send({ status: "error", message: "You already followed this tag." });
+  if (hasBeenFollowed && hasBeenFollowed.length !== 0)
+    return res.status(403).send({ status: "error", message: "You already followed this tag." });
 
-  followed = new followingTag({ userId, tagId });
+  !followed ? (followed = new followingTag({ userId, tagId })) : followed.tagId.push(tagId);
+
   await followed.save();
-
   return res.status(200).send({ status: "success", message: `Tag followed.` });
 };
 
 const unfollowTag = async (req, res) => {
   const { userId, tagId } = req.body;
 
-  const unfollowed = await followingTag.findOneAndRemove({ userId, tagId });
-  if (!unfollowed)
+  let followed = await followingTag.findOne({ userId });
+  if (!followed)
     return res.status(404).send({ status: "error", message: "You do not follow this tag." });
 
+  const hasBeenFollowed = followed.tagId.filter((t) => t.toString() === tagId);
+
+  if (hasBeenFollowed.length === 0)
+    return res.status(404).send({ status: "error", message: "You do not follow this tag." });
+
+  followed.tagId = followed.tagId.filter((t) => t.toString() !== tagId);
+
+  await followed.save();
   return res.status(200).send({ status: "success", message: `Tag unfollowed.` });
 };
 
@@ -138,7 +145,6 @@ const followUser = async (req, res) => {
   }
 
   await Promise.all([following.save(), follower.save()]);
-
   return res.status(201).send({ status: "success", message: "You followed this user." });
 };
 
@@ -150,26 +156,23 @@ const unfollowUser = async (req, res) => {
     return res.status(403).send({ status: "error", message: "Can not unfollow yourself." });
 
   let following = await followingUser.findOne({ userId });
-  if (!following) {
+  if (!following)
     return res.status(404).send({ status: "error", message: "You are not following this user." });
-  } else {
-    following.followingUserId = following.followingUserId.filter(
-      (f) => f.toString() !== userIdToUnfollow
-    );
-  }
+
+  following.followingUserId = following.followingUserId.filter(
+    (f) => f.toString() !== userIdToUnfollow
+  );
 
   let follower = await followerUser.findOne({ userId: userIdToUnfollow });
-  if (!follower) {
+  if (!follower)
     return res
       .status(404)
       .send({ status: "error", message: "You are not a follower of this user." });
-  } else {
-    follower.followerUserId = follower.followerUserId.filter((f) => f.toString() !== userId);
-  }
+
+  follower.followerUserId = follower.followerUserId.filter((f) => f.toString() !== userId);
 
   await Promise.all([following.save(), follower.save()]);
-
-  return res.send("unfollow user");
+  return res.send({ status: "success", message: "You unfollowed this user." });
 };
 
 const followingUsers = async (req, res) => {
