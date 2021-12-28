@@ -6,7 +6,7 @@ import { Tag } from "../models/tag.js";
 const list = async (_, res) => {
   const tags = await Tag.find().sort("name");
 
-  return res.status(200).send(tags);
+  return res.status(200).send({ status: "success", data: tags });
 };
 
 const show = async (req, res) => {
