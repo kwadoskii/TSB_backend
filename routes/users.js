@@ -6,24 +6,26 @@ import validate from "../middlewares/validate.js";
 import validateObjectId from "../middlewares/validateObjectId.js";
 import { validateUser, validatePatchUser } from "../models/user.js";
 import userController from "../controllers/userController.js";
+import auth from "../middlewares/auth.js";
 
 const router = express.Router();
 
-router.get("/", userController.list);
-router.get("/tags", [validateObjectId, me], userController.followingTags);
-router.post("/tags/follow", me, userController.followTag);
-router.post("/tags/unfollow", me, userController.unfollowTag);
+router.get("/", admin, userController.list);
+router.get("/me", auth, userController.me);
+router.get("/tags", auth, userController.followingTags);
+router.post("/tags/follow/:id", auth, userController.followTag);
+router.post("/tags/unfollow/:id", auth, userController.unfollowTag);
 
 // user followers and following
-router.post("/follow/:id", [validateObjectId, me], userController.followUser);
-router.post("/unfollow/:id", [validateObjectId, me], userController.unfollowUser);
+router.post("/follow/:id", [auth, validateObjectId], userController.followUser);
+router.post("/unfollow/:id", [auth, validateObjectId], userController.unfollowUser);
 
-router.get("/followers", me, userController.followersList);
-router.get("/following", me, userController.followingUsers);
+router.get("/followers", auth, userController.followersList);
+router.get("/following", auth, userController.followingUsers);
 
 router.get("/:id", validateObjectId, userController.show);
-router.post("/", validate(validateUser), userController.create);
-router.patch("/:id", [admin, me, validate(validatePatchUser)], userController.update);
-router.delete("/:id", [admin, me, validateObjectId], userController.remove);
+router.post("/", validate(validateUser), userController.create); //register user
+router.patch("/:id", [auth, validate(validatePatchUser)], userController.update);
+router.delete("/:id", [auth, validateObjectId], userController.remove);
 
 export default router;

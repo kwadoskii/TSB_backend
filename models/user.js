@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Joi from "joi";
 import uniqueValidator from "mongoose-unique-validator";
+import jwt from "jsonwebtoken";
 
 const userShema = new mongoose.Schema(
   {
@@ -90,11 +91,32 @@ const userShema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isAdmin: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
 
 userShema.plugin(uniqueValidator, { message: "should be unique." });
+
+userShema.methods.generateAuthToken = function () {
+  const token = jwt.sign(
+    {
+      _id: this._id,
+      email: this.email,
+      firstname: this.firstname,
+      middlename: this.middlename,
+      lastname: this.lastname,
+      // isAdmin: this.isAdmin,
+    },
+    process.env.JWT_PRIVATE_KEY,
+    { expiresIn: "30d", issuer: "TSB" }
+  );
+
+  return token;
+};
 
 const User = mongoose.model("User", userShema);
 
@@ -118,6 +140,7 @@ const validateUser = (user, options) => {
     education: Joi.string().min(2).max(100).label("Education").trim(),
     displayEmail: Joi.boolean().label("Display Email"),
     displayWebsite: Joi.boolean().label("Display Website"),
+    isAdmin: Joi.boolean().label("Is Admin"),
   });
 
   return schema.validate(user, options);
@@ -143,9 +166,22 @@ const validatePatchUser = (user, options) => {
     education: Joi.string().max(100).label("Education").trim().allow(""),
     displayEmail: Joi.boolean().label("Display Email"),
     displayWebsite: Joi.boolean().label("Display Website"),
+    isAdmin: Joi.boolean().label("Is Admin"),
   });
 
   return schema.validate(user, options);
 };
 
-export { User, userShema, validatePatchUser, validateUser };
+const validateAuth = (data, options) => {
+  const schema = Joi.object({
+    username: [
+      Joi.string().min(5).max(255).label("Username").trim(),
+      Joi.string().min(5).max(512).trim().email().label("Email"),
+    ],
+    password: Joi.string().min(2).max(1024).label("Password").trim(),
+  });
+
+  return schema.validate(data, options);
+};
+
+export { User, userShema, validatePatchUser, validateUser, validateAuth };

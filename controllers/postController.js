@@ -104,7 +104,6 @@ const comment = async (req, res) => {
   const newComment = new Comment({ userId, postId, comment });
 
   await newComment.save();
-
   return res.status(201).send({ status: "success", message: "Comment added." });
 };
 
@@ -124,7 +123,6 @@ const likeComment = async (req, res) => {
   comment.likes.push(userId);
 
   await comment.save();
-
   return res.status(200).send({ status: "success", message: `Comment ${commentId} liked.` });
 };
 

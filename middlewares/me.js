@@ -1,6 +1,16 @@
-export default (req, res, next) => {
-  // if (!req.user.isAdmin) return res.status(403).send("Access denied.");
-  // check for  the user in the header and grant access or not
+import auth from "../middlewares/auth.js";
 
-  next();
-};
+export default function (req, res, next) {
+  //  checks if the record was posted by the user requesting to modify/edit it
+
+  // check for this in the controllers before modifying them.
+
+  auth(req, res, function () {
+    if (req.body._id !== req.user._id)
+      return res
+        .status(401)
+        .send({ status: "error", message: "User does not have rights to modify this data." });
+
+    next();
+  });
+}

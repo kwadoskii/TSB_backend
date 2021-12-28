@@ -44,6 +44,12 @@ const create = async (req, res) => {
 
 const update = async (req, res) => {
   const { id } = req.params;
+
+  if (req.body.password) {
+    const salt = await bcrypt.genSalt();
+    req.body.password = await bcrypt.hash(req.body.password, salt);
+  }
+
   const user = await User.findByIdAndUpdate(id, { ...dot.dot(req.body) }, updateOptions).select(
     "-password -createdAt -updatedAt -__v"
   );
@@ -65,7 +71,7 @@ const remove = async (req, res) => {
 };
 
 const followingTags = async (req, res) => {
-  const { userId } = req.body;
+  const { _id: userId } = req.user;
 
   const tags = await followingTag
     .findOne({ userId })
@@ -82,7 +88,8 @@ const followingTags = async (req, res) => {
 };
 
 const followTag = async (req, res) => {
-  const { userId, tagId } = req.body;
+  const { id: tagId } = req.params;
+  const { _id: userId } = req.user;
 
   let followed = await followingTag.findOne({ userId });
   const hasBeenFollowed = followed?.tagId.filter((t) => t.toString() === tagId);
@@ -97,7 +104,8 @@ const followTag = async (req, res) => {
 };
 
 const unfollowTag = async (req, res) => {
-  const { userId, tagId } = req.body;
+  const { id: tagId } = req.params;
+  const { _id: userId } = req.user;
 
   let followed = await followingTag.findOne({ userId });
   if (!followed)
@@ -116,9 +124,8 @@ const unfollowTag = async (req, res) => {
 
 const followUser = async (req, res) => {
   const { id: userIdToFollow } = req.params;
-  const { userId } = req.body;
+  const { _id: userId } = req.user;
 
-  //check if my id matches followerUserId and return error
   if (userId === userIdToFollow)
     return res.status(403).send({ status: "error", message: "Can not follow yourself." });
 
@@ -150,7 +157,7 @@ const followUser = async (req, res) => {
 
 const unfollowUser = async (req, res) => {
   const { id: userIdToUnfollow } = req.params;
-  const { userId } = req.body;
+  const { _id: userId } = req.user;
 
   if (userId === userIdToUnfollow)
     return res.status(403).send({ status: "error", message: "Can not unfollow yourself." });
@@ -176,7 +183,7 @@ const unfollowUser = async (req, res) => {
 };
 
 const followingUsers = async (req, res) => {
-  const { userId } = req.body;
+  const { _id: userId } = req.user;
 
   const following = await followingUser
     .findOne({ userId })
@@ -187,7 +194,7 @@ const followingUsers = async (req, res) => {
 };
 
 const followersList = async (req, res) => {
-  const { userId } = req.body;
+  const { _id: userId } = req.user;
 
   const followers = await followerUser
     .findOne({ userId })
@@ -195,6 +202,37 @@ const followersList = async (req, res) => {
     .populate("followerUserId", userFields);
 
   return res.status(200).send({ status: "success", data: followers?.followerUserId || [] });
+};
+
+const me = async (req, res) => {
+  const user = await User.findById(req.user._id).select("-password -__v -createdAt -updatedAt");
+
+  res.status(200).send({ status: "success", data: user });
+};
+
+const auth = async (req, res) => {
+  let user = await User.findOne({
+    $or: [{ username: req.body.username }, { email: req.body.username }],
+  });
+
+  if (!user) return res.status(400).send("Invalid login credentials.");
+
+  const validPassword = await bcrypt.compare(req.body.password, user.password);
+  if (!validPassword) return res.status(400).send("Invalid login credentials.");
+
+  const token = user.generateAuthToken();
+
+  res.status(200).send({
+    status: "success",
+    user: {
+      _id: user._id,
+      firstname: user.firstname,
+      middlename: user.middlename,
+      lastname: user.lastname,
+      email: user.email,
+    },
+    accessToken: token,
+  });
 };
 
 export default {
@@ -210,4 +248,6 @@ export default {
   unfollowUser,
   followingUsers,
   followersList,
+  me,
+  auth,
 };
