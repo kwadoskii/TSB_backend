@@ -51,6 +51,8 @@ const userShema = new mongoose.Schema(
     profileImage: {
       type: String,
       maxlength: 250,
+      default:
+        "https://res.cloudinary.com/practicaldev/image/fetch/s--qZUyVAzn--/c_fill,f_auto,fl_progressive,h_320,q_auto,w_320/https://dev-to-uploads.s3.amazonaws.com/uploads/user/profile_image/473848/c9176bd4-7e29-4848-84ca-534bb8533111.png",
     },
     location: {
       type: String,
@@ -109,6 +111,8 @@ userShema.methods.generateAuthToken = function () {
       firstname: this.firstname,
       middlename: this.middlename,
       lastname: this.lastname,
+      username: this.username,
+      profileImage: this.profileImage,
       // isAdmin: this.isAdmin,
     },
     process.env.JWT_PRIVATE_KEY,

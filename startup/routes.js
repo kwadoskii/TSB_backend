@@ -6,6 +6,7 @@ import status from "../routes/status.js";
 import users from "../routes/users.js";
 import posts from "../routes/posts.js";
 import login from "../routes/login.js";
+import register from "../routes/register.js";
 
 export default function (app) {
   app.use(express.json());
@@ -16,6 +17,7 @@ export default function (app) {
   app.use("/api/users", users);
   app.use("/api/posts", posts);
   app.use("/api/login", login);
+  app.use("/api/register", register);
 
   app.use(error);
 }

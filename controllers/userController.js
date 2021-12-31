@@ -29,16 +29,21 @@ const create = async (req, res) => {
   let user = await User.findOne({
     $or: [{ email: req.body.email }, { username: req.body.username }],
   });
-  if (user) return res.status(400).send("Username or email already registered.");
+  if (user)
+    return res
+      .status(409) //conflict code
+      .send({ status: "error", message: "Username or email already registered." });
 
   user = new User({ ...req.body });
   const salt = await bcrypt.genSalt();
   user.password = await bcrypt.hash(req.body.password, salt);
   user = await user.save();
 
+  const token = user.generateAuthToken();
+
   return res.status(201).send({
     status: "success",
-    data: pick(user, ["firstname", "lastname", "username", "email"]),
+    data: { ...pick(user, ["firstname", "lastname", "username", "email"]), token },
   });
 };
 
@@ -224,14 +229,17 @@ const auth = async (req, res) => {
 
   res.status(200).send({
     status: "success",
-    user: {
-      _id: user._id,
-      firstname: user.firstname,
-      middlename: user.middlename,
-      lastname: user.lastname,
-      email: user.email,
+    data: {
+      user: {
+        _id: user._id,
+        firstname: user.firstname,
+        middlename: user.middlename,
+        lastname: user.lastname,
+        email: user.email,
+        username: user.username,
+      },
+      token,
     },
-    accessToken: token,
   });
 };
 
