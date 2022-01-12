@@ -22,6 +22,6 @@ const validateFollowingTag = (data, options) => {
   return schema.validate(data, options);
 };
 
-const followingTag = mongoose.model("FollowingTag", followingTagSchema);
+const FollowingTag = mongoose.model("FollowingTag", followingTagSchema);
 
-export { followingTag, followingTagSchema, validateFollowingTag };
+export { FollowingTag, followingTagSchema, validateFollowingTag };
