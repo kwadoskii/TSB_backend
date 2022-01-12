@@ -4,9 +4,11 @@ import dot from "dot-object";
 
 import updateOptions from "../helpers/updateOptions.js";
 import { User } from "../models/user.js";
-import { followingTag } from "../models/followingTag.js";
+import { FollowingTag } from "../models/followingTag.js";
 import { followingUser } from "../models/following.js";
 import { followerUser } from "../models/follower.js";
+import { Post } from "../models/post.js";
+import { Comment } from "../models/comment.js";
 
 const userFields = "firstname middlename lastname username email profileImage";
 
@@ -78,8 +80,7 @@ const remove = async (req, res) => {
 const followingTags = async (req, res) => {
   const { _id: userId } = req.user;
 
-  const tags = await followingTag
-    .findOne({ userId })
+  const tags = await FollowingTag.findOne({ userId })
     .populate("tagId", "name -_id")
     .select("-userId -createdAt -updatedAt -__v");
 
@@ -96,13 +97,13 @@ const followTag = async (req, res) => {
   const { id: tagId } = req.params;
   const { _id: userId } = req.user;
 
-  let followed = await followingTag.findOne({ userId });
+  let followed = await FollowingTag.findOne({ userId });
   const hasBeenFollowed = followed?.tagId.filter((t) => t.toString() === tagId);
 
   if (hasBeenFollowed && hasBeenFollowed.length !== 0)
     return res.status(403).send({ status: "error", message: "You already followed this tag." });
 
-  !followed ? (followed = new followingTag({ userId, tagId })) : followed.tagId.push(tagId);
+  !followed ? (followed = new FollowingTag({ userId, tagId })) : followed.tagId.push(tagId);
 
   await followed.save();
   return res.status(200).send({ status: "success", message: `Tag followed.` });
@@ -112,7 +113,7 @@ const unfollowTag = async (req, res) => {
   const { id: tagId } = req.params;
   const { _id: userId } = req.user;
 
-  let followed = await followingTag.findOne({ userId });
+  let followed = await FollowingTag.findOne({ userId });
   if (!followed)
     return res.status(404).send({ status: "error", message: "You do not follow this tag." });
 
@@ -226,6 +227,10 @@ const auth = async (req, res) => {
   if (!validPassword) return res.status(400).send("Invalid login credentials.");
 
   const token = user.generateAuthToken();
+  user.lastLogin = new Date();
+  user.loginCount++;
+
+  await User.findByIdAndUpdate(user._id, { ...user });
 
   res.status(200).send({
     status: "success",
@@ -243,6 +248,38 @@ const auth = async (req, res) => {
   });
 };
 
+const getProfileByUsername = async (req, res) => {
+  let user = await User.findOne({ username: req.params.username })
+    .select("-password -__v -createdAt -updatedAt")
+    .lean();
+
+  if (!user)
+    res
+      .status(404)
+      .send({ status: "error", message: `User with username ${req.params.username} not found.` });
+
+  let postsByUser = await Post.find({ author: user._id })
+    .select("-updatedAt -__v")
+    .populate("tags", "name");
+
+  let commentsByUser = await Comment.find({ userId: user._id })
+    .select("-updatedAt -__v -userId")
+    .populate("postId", "title")
+    .sort("-createdAt");
+
+  let tagsFollowedByUser = await FollowingTag.find({ userId: user._id }).select(
+    "-updatedAt -createdAt -__v -userId"
+  );
+
+  let data = {};
+  data = user;
+  data["posts"] = postsByUser;
+  data["comments"] = commentsByUser;
+  data["followingTags"] = tagsFollowedByUser;
+
+  res.status(200).send({ status: "success", data });
+};
+
 export default {
   list,
   show,
@@ -258,4 +295,5 @@ export default {
   followersList,
   me,
   auth,
+  getProfileByUsername,
 };
