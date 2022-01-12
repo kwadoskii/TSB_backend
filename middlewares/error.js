@@ -17,5 +17,7 @@ export default function error(err, req, res, next) {
 
   console.error(err.stack);
 
-  return res.status(500).send("Something went wrong!");
+  return res
+    .status(500)
+    .send({ status: "Internal server error", message: "Something went wrong!" });
 }
