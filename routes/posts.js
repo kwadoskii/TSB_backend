@@ -18,11 +18,14 @@ router.get("/", postController.list);
 router.get("/search", postController.search);
 router.post("/save", [auth, validate(validateSavedPost)], postController.save); //save a post
 router.post("/like", [auth, validate(validateReaction)], postController.reaction); //like a post
+router.get("/comment/:id", validateObjectId, postController.showComment);
 router.post("/comment", [auth, validate(validateComment)], postController.comment);
 router.post("/comment/like", [auth, validate(validateCommentLike)], postController.likeComment);
 router.delete("/comment/:id", [auth, validateObjectId], postController.removeComment);
 
 router.get("/:id", validateObjectId, postController.show);
+router.get("/:id/comments", validateObjectId, postController.postComments);
+router.get("/:id/likes", validateObjectId, postController.postLikes);
 
 // add auth validation middleware here
 router.post("/", [auth, validate(validatePost)], postController.create);

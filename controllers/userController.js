@@ -260,7 +260,8 @@ const getProfileByUsername = async (req, res) => {
 
   let postsByUser = await Post.find({ author: user._id })
     .select("-updatedAt -__v")
-    .populate("tags", "name");
+    .populate("tags", "name")
+    .sort("-createdAt");
 
   let commentsByUser = await Comment.find({ userId: user._id })
     .select("-updatedAt -__v -userId")

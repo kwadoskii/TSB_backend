@@ -107,6 +107,27 @@ const comment = async (req, res) => {
   return res.status(201).send({ status: "success", message: "Comment added." });
 };
 
+const showComment = async (req, res) => {
+  const { id } = req.params;
+
+  const comment = await Comment.findById(id)
+    .select("-__v -updatedAt")
+    .populate({
+      path: "postId",
+      select: "title author slug",
+      populate: {
+        path: "author",
+        select: "username",
+      },
+    })
+    .populate("userId", "firstname lastname email username");
+
+  if (!comment)
+    return res.status(404).send({ status: "error", message: `Comment with ID ${id} not found.` });
+
+  return res.status(200).send({ status: "success", data: comment });
+};
+
 const likeComment = async (req, res) => {
   const { userId, commentId } = req.body;
   const comment = await Comment.findById(commentId);
@@ -137,6 +158,20 @@ const removeComment = async (req, res) => {
   return res.status(202).send({ status: "success", message: `Comment with ID ${id} deleted.` });
 };
 
+const postComments = async (req, res) => {
+  const { id } = req.params;
+  const postComments = await Comment.find({ postId: id }).select("-__v -updatedAt");
+
+  return res.status(200).send({ status: "success", data: postComments });
+};
+
+const postLikes = async (req, res) => {
+  const { id } = req.params;
+  const postComments = await Reaction.find({ postId: id }).select("-__v -updatedAt");
+
+  return res.status(200).send({ status: "success", data: postComments });
+};
+
 export default {
   list,
   show,
@@ -149,4 +184,7 @@ export default {
   comment,
   likeComment,
   removeComment,
+  showComment,
+  postComments,
+  postLikes,
 };
