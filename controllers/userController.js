@@ -81,14 +81,14 @@ const followingTags = async (req, res) => {
   const { _id: userId } = req.user;
 
   const tags = await FollowingTag.findOne({ userId })
-    .populate("tagId", "name -_id")
+    .populate("tagId", "name")
     .select("-userId -createdAt -updatedAt -__v");
 
   return res.status(200).send({
     status: "success",
     data: {
       userId,
-      tags: tags.tagId,
+      tags: tags?.tagId || [],
     },
   });
 };
@@ -268,7 +268,7 @@ const getProfileByUsername = async (req, res) => {
     .populate("postId", "title")
     .sort("-createdAt");
 
-  let tagsFollowedByUser = await FollowingTag.find({ userId: user._id }).select(
+  let tagsFollowedByUser = await FollowingTag.findOne({ userId: user._id }).select(
     "-updatedAt -createdAt -__v -userId"
   );
 
