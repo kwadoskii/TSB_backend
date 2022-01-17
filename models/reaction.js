@@ -4,7 +4,7 @@ import referrenceValidator from "mongoose-referrence-validator";
 
 const reactionSchema = new mongoose.Schema(
   {
-    postId: { type: mongoose.Schema.Types.ObjectId, ref: "Post", required: true },
+    postId: { type: [mongoose.Schema.Types.ObjectId], ref: "Post", required: true },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   },
   { timestamps: true }

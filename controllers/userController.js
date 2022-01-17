@@ -9,6 +9,7 @@ import { followingUser } from "../models/following.js";
 import { followerUser } from "../models/follower.js";
 import { Post } from "../models/post.js";
 import { Comment } from "../models/comment.js";
+import { Reaction } from "../models/reaction.js";
 
 const userFields = "firstname middlename lastname username email profileImage";
 
@@ -97,6 +98,7 @@ const followTag = async (req, res) => {
   const { id: tagId } = req.params;
   const { _id: userId } = req.user;
 
+  //if user has followed any tag before
   let followed = await FollowingTag.findOne({ userId });
   const hasBeenFollowed = followed?.tagId.filter((t) => t.toString() === tagId);
 
@@ -281,6 +283,22 @@ const getProfileByUsername = async (req, res) => {
   res.status(200).send({ status: "success", data });
 };
 
+const postReactions = async (req, res) => {
+  const { _id: userId } = req.user;
+
+  const reactions = await Reaction.findOne({ userId })
+    .populate("postId", "title")
+    .select("-userId -createdAt -updatedAt -__v");
+
+  return res.status(200).send({
+    status: "success",
+    data: {
+      userId,
+      reactions: reactions?.postId || [],
+    },
+  });
+};
+
 export default {
   list,
   show,
@@ -297,4 +315,5 @@ export default {
   me,
   auth,
   getProfileByUsername,
+  postReactions,
 };
