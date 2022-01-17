@@ -13,6 +13,7 @@ const router = express.Router();
 router.get("/", [auth, admin], userController.list);
 router.get("/me", auth, userController.me);
 router.get("/tags", auth, userController.followingTags);
+router.get("/reactions", auth, userController.postReactions);
 router.post("/tags/follow/:id", [auth, validateObjectId], userController.followTag);
 router.post("/tags/unfollow/:id", [auth, validateObjectId], userController.unfollowTag);
 
@@ -24,7 +25,7 @@ router.get("/followers", auth, userController.followersList);
 router.get("/following", auth, userController.followingUsers);
 
 // router.get("/:id", validateObjectId, userController.show);
-router.get("/:username", auth, userController.getProfileByUsername);
+router.get("/:username", userController.getProfileByUsername);
 router.post("/", validate(validateUser), userController.create); //register user
 router.patch("/:id", [auth, validate(validatePatchUser)], userController.update);
 router.delete("/:id", [auth, validateObjectId], userController.remove);
