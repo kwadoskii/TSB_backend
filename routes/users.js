@@ -13,8 +13,8 @@ const router = express.Router();
 router.get("/", [auth, admin], userController.list);
 router.get("/me", auth, userController.me);
 router.get("/tags", auth, userController.followingTags);
-router.post("/tags/follow/:id", auth, userController.followTag);
-router.post("/tags/unfollow/:id", auth, userController.unfollowTag);
+router.post("/tags/follow/:id", [auth, validateObjectId], userController.followTag);
+router.post("/tags/unfollow/:id", [auth, validateObjectId], userController.unfollowTag);
 
 // user followers and following
 router.post("/follow/:id", [auth, validateObjectId], userController.followUser);
