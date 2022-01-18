@@ -2,18 +2,34 @@ import dot from "dot-object";
 
 import updateOptions from "../helpers/updateOptions.js";
 import { Tag } from "../models/tag.js";
+import { Post } from "../models/post.js";
 
 const list = async (_, res) => {
-  const tags = await Tag.find().sort("name");
+  let tags = await Tag.find().sort("name").lean();
+  const counts = [];
+
+  for (let tag of tags) {
+    counts.push({
+      _id: tag._id,
+      count: (await Post.find({ tags: tag._id })).length,
+    });
+  }
+
+  tags = tags.map((t) => {
+    return { ...t, postCount: counts.find((c) => c._id === t._id).count };
+  });
 
   return res.status(200).send({ status: "success", data: tags });
 };
 
 const show = async (req, res) => {
   const { id } = req.params;
-  const tag = await Tag.findById(id);
+  const tag = await Tag.findById(id).lean();
+
   if (!tag)
     return res.status(404).send({ status: "error", message: `Tag with ID ${id} not found` });
+
+  tag.postCount = await Post.find({ tags: id }).count();
 
   return res.status(200).send({ status: "success", data: tag });
 };

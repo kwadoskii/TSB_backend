@@ -16,7 +16,7 @@ const postSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-postSchema.plugin(referrenceValidator);
+// postSchema.plugin(referrenceValidator);
 postSchema.plugin(mongooseUniqueValidator, { message: "should be unique." });
 
 const Post = mongoose.model("Post", postSchema);
