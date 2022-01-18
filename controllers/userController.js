@@ -223,10 +223,12 @@ const auth = async (req, res) => {
     $or: [{ username: req.body.username }, { email: req.body.username }],
   });
 
-  if (!user) return res.status(400).send("Invalid login credentials.");
+  if (!user)
+    return res.status(400).send({ status: "error", message: "Invalid login credentials." });
 
   const validPassword = await bcrypt.compare(req.body.password, user.password);
-  if (!validPassword) return res.status(400).send("Invalid login credentials.");
+  if (!validPassword)
+    return res.status(400).send({ status: "error", message: "Invalid login credentials." });
 
   const token = user.generateAuthToken();
   user.lastLogin = new Date();
