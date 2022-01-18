@@ -10,6 +10,7 @@ import { followerUser } from "../models/follower.js";
 import { Post } from "../models/post.js";
 import { Comment } from "../models/comment.js";
 import { Reaction } from "../models/reaction.js";
+import { SavedPost } from "../models/savedPost.js";
 
 const userFields = "firstname middlename lastname username email profileImage";
 
@@ -301,6 +302,19 @@ const postReactions = async (req, res) => {
   });
 };
 
+const savedPosts = async (req, res) => {
+  const { _id: userId } = req.user;
+  const savedPosts = await SavedPost.findOne({ userId })
+    .select("-__v -createdAt -updatedAt")
+    .populate({
+      path: "postId",
+      select: "-__v -updatedAt",
+      populate: { path: "author tags", select: "name firstname lastname username profileImage" },
+    });
+
+  return res.status(200).send({ status: "success", data: savedPosts?.postId || [] });
+};
+
 export default {
   list,
   show,
@@ -318,4 +332,5 @@ export default {
   auth,
   getProfileByUsername,
   postReactions,
+  savedPosts,
 };
