@@ -161,7 +161,7 @@ const followUser = async (req, res) => {
   }
 
   await Promise.all([following.save(), follower.save()]);
-  return res.status(201).send({ status: "success", message: "You followed this user." });
+  return res.status(200).send({ status: "success", message: "You followed this user." });
 };
 
 const unfollowUser = async (req, res) => {
@@ -188,7 +188,7 @@ const unfollowUser = async (req, res) => {
   follower.followerUserId = follower.followerUserId.filter((f) => f.toString() !== userId);
 
   await Promise.all([following.save(), follower.save()]);
-  return res.send({ status: "success", message: "You unfollowed this user." });
+  return res.status(200).send({ status: "success", message: "You unfollowed this user." });
 };
 
 const followingUsers = async (req, res) => {
@@ -315,6 +315,44 @@ const savedPosts = async (req, res) => {
   return res.status(200).send({ status: "success", data: savedPosts?.postId || [] });
 };
 
+const savePost = async (req, res) => {
+  const { id: postId } = req.params;
+  const { _id: userId } = req.user;
+
+  let savedAnyPost = await SavedPost.findOne({ userId });
+  const postHasBeenSaved = savedAnyPost?.postId.filter((p) => p.toString() === postId);
+
+  if (postHasBeenSaved && postHasBeenSaved.length !== 0)
+    return res.status(403).send({ status: "error", message: "You already saved this post." });
+
+  !savedAnyPost
+    ? (savedAnyPost = new SavedPost({ userId, postId }))
+    : savedAnyPost.postId.push(postId);
+
+  await savedAnyPost.save();
+  res.status(200).send({ status: "success", message: "Post saved." });
+};
+
+const unsavePost = async (req, res) => {
+  const { id: postId } = req.params;
+  const { _id: userId } = req.user;
+
+  let saved = await SavedPost.findOne({ userId });
+  if (!saved)
+    return res.status(404).send({ status: "error", message: "You have not saved this post." });
+
+  const hasPostBeenSaved = saved.postId.filter((p) => p.toString() === postId);
+
+  if (hasPostBeenSaved.length === 0)
+    return res.status(404).send({ status: "error", message: "You have not saved this post." });
+
+  saved.postId = saved.postId.filter((p) => p.toString() !== postId);
+
+  await saved.save();
+
+  return res.status(200).send({ status: "success", message: "Post unsaved." });
+};
+
 export default {
   list,
   show,
@@ -333,4 +371,6 @@ export default {
   getProfileByUsername,
   postReactions,
   savedPosts,
+  savePost,
+  unsavePost,
 };

@@ -18,6 +18,10 @@ router.get("/savedposts", auth, userController.savedPosts);
 router.post("/tags/follow/:id", [auth, validateObjectId], userController.followTag);
 router.post("/tags/unfollow/:id", [auth, validateObjectId], userController.unfollowTag);
 
+//save and unsave a post
+router.post("/posts/save/:id", [auth, validateObjectId], userController.savePost);
+router.post("/posts/unsave/:id", [auth, validateObjectId], userController.unsavePost);
+
 // user followers and following
 router.post("/follow/:id", [auth, validateObjectId], userController.followUser);
 router.post("/unfollow/:id", [auth, validateObjectId], userController.unfollowUser);
