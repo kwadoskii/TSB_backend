@@ -19,6 +19,7 @@ router.get("/search", postController.search);
 router.post("/save", [auth, validate(validateSavedPost)], postController.save); //save a post
 router.post("/like", [auth, validate(validateReaction)], postController.reaction); //like a post
 
+//like and unlike post
 router.post("/like/:id", [auth, validateObjectId], postController.likePost);
 router.post("/unlike/:id", [auth, validateObjectId], postController.unlikePost);
 
@@ -30,7 +31,7 @@ router.delete("/comment/:id", [auth, validateObjectId], postController.removeCom
 //post details
 router.get("/:id", validateObjectId, postController.show);
 router.get("/:id/comments", validateObjectId, postController.postComments);
-router.get("/:id/likes", validateObjectId, postController.postLikes);
+router.get("/:id/likes", validateObjectId, postController.postLikes); //likes to a post
 
 // add auth validation middleware here
 router.post("/", [auth, validate(validatePost)], postController.create);
