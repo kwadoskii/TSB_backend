@@ -304,6 +304,7 @@ const postReactions = async (req, res) => {
 
 const savedPosts = async (req, res) => {
   const { _id: userId } = req.user;
+
   const savedPosts = await SavedPost.findOne({ userId })
     .select("-__v -createdAt -updatedAt")
     .populate({
@@ -359,6 +360,29 @@ const getTotalUserCount = async (_, res) => {
   return res.status(200).send({ status: "success", data: userCount });
 };
 
+const postsByUser = async (req, res) => {
+  const { _id: userId } = req.user;
+
+  const posts = await Post.find({ author: userId })
+    .populate({ path: "tags", select: "name" })
+    .populate("author", "firstname lastname username profileImage")
+    .select("-updatedAt -__v")
+    .sort("-createdAt");
+
+  return res.status(200).send({ status: "success", data: posts });
+};
+
+const commentsByUser = async (req, res) => {
+  const { _id: userId } = req.user;
+
+  const comments = await Comment.find({ userId })
+    .populate({ path: "userId", select: "username" })
+    .select("-updatedAt -__v")
+    .sort("-createdAt");
+
+  return res.status(200).send({ status: "success", data: comments });
+};
+
 export default {
   list,
   show,
@@ -380,4 +404,6 @@ export default {
   savePost,
   unsavePost,
   getTotalUserCount,
+  postsByUser,
+  commentsByUser,
 };

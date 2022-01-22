@@ -14,6 +14,8 @@ router.get("/", [auth, admin], userController.list);
 router.get("/me", auth, userController.me);
 router.get("/tags", auth, userController.followingTags);
 router.get("/reactions", auth, userController.postReactions);
+router.get("/posts", auth, userController.postsByUser);
+router.get("/comments", auth, userController.commentsByUser);
 router.get("/savedposts", auth, userController.savedPosts);
 router.post("/tags/follow/:id", [auth, validateObjectId], userController.followTag);
 router.post("/tags/unfollow/:id", [auth, validateObjectId], userController.unfollowTag);
