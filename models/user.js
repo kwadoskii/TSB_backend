@@ -5,23 +5,9 @@ import jwt from "jsonwebtoken";
 
 const userShema = new mongoose.Schema(
   {
-    firstname: {
-      type: String,
-      required: true,
-      minlength: 2,
-      maxlength: 255,
-    },
-    middlename: {
-      type: String,
-      minlength: 2,
-      maxlength: 255,
-    },
-    lastname: {
-      type: String,
-      required: true,
-      minlength: 2,
-      maxlength: 255,
-    },
+    firstname: { type: String, required: true, minlength: 2, maxlength: 255 },
+    middlename: { type: String, minlength: 2, maxlength: 255 },
+    lastname: { type: String, required: true, minlength: 2, maxlength: 255 },
     username: {
       type: String,
       required: true,
@@ -30,73 +16,27 @@ const userShema = new mongoose.Schema(
       unique: true,
       lowercase: true,
     },
-    email: {
-      type: String,
-      required: true,
-      minlength: 5,
-      maxlength: 512,
-      unique: true,
-    },
-    password: {
-      type: String,
-      required: true,
-      minlength: 2,
-      maxlength: 1024,
-    },
-    bio: {
-      type: String,
-      minlength: 2,
-      maxlength: 1024,
-    },
+    email: { type: String, required: true, minlength: 5, maxlength: 512, unique: true },
+    password: { type: String, required: true, minlength: 2, maxlength: 1024 },
+    bio: { type: String, minlength: 2, maxlength: 1024 },
+    gender: { type: String, enum: ["F", "M"], required: true },
     profileImage: {
       type: String,
       maxlength: 250,
-      default:
-        "https://res.cloudinary.com/practicaldev/image/fetch/s--qZUyVAzn--/c_fill,f_auto,fl_progressive,h_320,q_auto,w_320/https://dev-to-uploads.s3.amazonaws.com/uploads/user/profile_image/473848/c9176bd4-7e29-4848-84ca-534bb8533111.png",
+      default: "https://www.shareicon.net/data/512x512/2016/07/26/802043_man_512x512.png",
     },
-    location: {
-      type: String,
-      minlength: 2,
-      maxlength: 50,
-    },
-    website: {
-      type: String,
-      maxlength: 100,
-    },
+    location: { type: String, minlength: 2, maxlength: 50 },
+    website: { type: String, maxlength: 100 },
     occupation: {
-      position: {
-        type: String,
-        maxlength: 100,
-      },
-      company: {
-        type: String,
-        maxlength: 100,
-      },
-      website: {
-        type: String,
-        maxlength: 100,
-      },
+      position: { type: String, maxlength: 100 },
+      company: { type: String, maxlength: 100 },
+      website: { type: String, maxlength: 100 },
     },
-    education: {
-      type: String,
-      maxlength: 100,
-    },
-    joined: {
-      type: Date,
-      default: new Date(),
-    },
-    displayEmail: {
-      type: Boolean,
-      default: true,
-    },
-    displayWebsite: {
-      type: Boolean,
-      default: false,
-    },
-    isAdmin: {
-      type: Boolean,
-      default: false,
-    },
+    education: { type: String, maxlength: 100 },
+    joined: { type: Date, default: new Date() },
+    displayEmail: { type: Boolean, default: true },
+    displayWebsite: { type: Boolean, default: false },
+    isAdmin: { type: Boolean, default: false },
     lastLogin: { type: Date },
     loginCount: { type: Number, default: 0 },
   },
@@ -135,6 +75,7 @@ const validateUser = (user, options) => {
     email: Joi.string().required().min(5).max(512).trim().email().label("Email"),
     password: Joi.string().required().min(2).max(1024).label("Password").trim(),
     bio: Joi.string().min(2).max(1024).trim().label("Bio").trim(),
+    gender: Joi.string().label("Gender").trim().required().valid("F", "M"),
     profileImage: Joi.string().uri().max(250).label("Profile Image").trim(),
     location: Joi.string().max(50).trim(),
     website: Joi.string().uri().max(100).trim().uri({ allowRelative: true }).allow(""),
@@ -157,10 +98,11 @@ const validatePatchUser = (user, options) => {
     firstname: Joi.string().min(2).max(255).label("Firstname").trim(),
     middlename: Joi.string().min(2).max(255).trim().label("Middlename"),
     lastname: Joi.string().min(2).max(255).label("Lastname").trim(),
-    username: Joi.string().min(5).max(255).label("Username").trim(),
+    username: Joi.string().min(5).max(255).label("Username").trim().lowercase(),
     email: Joi.string().min(5).max(512).trim().email().label("Email"),
     password: Joi.string().min(2).max(1024).label("Password").trim(),
     bio: Joi.string().min(2).max(1024).trim().label("Bio").trim(),
+    gender: Joi.string().label("Gender").trim(),
     profileImage: Joi.string().uri().max(250).label("Profile Image").trim(),
     location: Joi.string().max(50).trim().allow(""),
     website: Joi.string().uri({ allowRelative: true }).max(100).trim().allow(""),

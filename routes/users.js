@@ -17,6 +17,7 @@ router.get("/reactions", auth, userController.postReactions);
 router.get("/savedposts", auth, userController.savedPosts);
 router.post("/tags/follow/:id", [auth, validateObjectId], userController.followTag);
 router.post("/tags/unfollow/:id", [auth, validateObjectId], userController.unfollowTag);
+router.get("/total", userController.getTotalUserCount);
 
 //save and unsave a post
 router.post("/posts/save/:id", [auth, validateObjectId], userController.savePost);

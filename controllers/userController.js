@@ -83,7 +83,7 @@ const followingTags = async (req, res) => {
   const { _id: userId } = req.user;
 
   const tags = await FollowingTag.findOne({ userId })
-    .populate("tagId", "name")
+    .populate("tagId", "-createdAt -updatedAt -__v")
     .select("-userId -createdAt -updatedAt -__v");
 
   return res.status(200).send({
@@ -353,6 +353,12 @@ const unsavePost = async (req, res) => {
   return res.status(200).send({ status: "success", message: "Post unsaved." });
 };
 
+const getTotalUserCount = async (_, res) => {
+  const userCount = await User.find().count();
+
+  return res.status(200).send({ status: "success", data: userCount });
+};
+
 export default {
   list,
   show,
@@ -373,4 +379,5 @@ export default {
   savedPosts,
   savePost,
   unsavePost,
+  getTotalUserCount,
 };
