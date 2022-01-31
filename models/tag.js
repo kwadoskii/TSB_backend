@@ -10,25 +10,13 @@ const tagSchema = new mongoose.Schema(
       minlength: 1,
       maxlength: 50,
       unique: true,
+      lowercase: true,
+      trim: true,
     },
-    backgroundColor: {
-      type: String,
-      required: true,
-      maxlength: 8,
-    },
-    textBlack: {
-      type: Boolean,
-      default: true,
-    },
-    image: {
-      type: String,
-      maxlength: 250,
-    },
-    description: {
-      type: String,
-      minlength: 10,
-      maxlength: 255,
-    },
+    backgroundColor: { type: String, required: true, maxlength: 8 },
+    textBlack: { type: Boolean, default: true },
+    image: { type: String, maxlength: 250 },
+    description: { type: String, minlength: 10, maxlength: 255 },
     __v: { type: Number, select: false },
   },
   { timestamps: true }
@@ -40,7 +28,7 @@ const Tag = mongoose.model("Tag", tagSchema);
 
 const validateTag = (tag, options) => {
   const schema = Joi.object({
-    name: Joi.string().min(1).max(50).required().label("Name").trim(),
+    name: Joi.string().min(1).max(50).required().label("Name").trim().lowercase(),
     backgroundColor: Joi.string().required().max(8).label("Background Color").trim(),
     textBlack: Joi.boolean(),
     image: Joi.string().uri().max(250).label("Image").trim(),
@@ -52,7 +40,7 @@ const validateTag = (tag, options) => {
 
 const validatePatchTag = (tag, options) => {
   const schema = Joi.object({
-    name: Joi.string().min(1).max(50).label("Name").trim(),
+    name: Joi.string().min(1).max(50).label("Name").trim().lowercase(),
     backgroundColor: Joi.string().max(8).label("Background Color").trim(),
     textBlack: Joi.boolean(),
     image: Joi.string().uri().max(250).label("Image").trim(),
