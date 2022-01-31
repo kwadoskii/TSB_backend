@@ -61,10 +61,22 @@ const remove = async (req, res) => {
   return res.status(202).send({ status: "success", message: `Tag with ID ${id} deleted.` });
 };
 
+const getTagByName = async (req, res) => {
+  const { name } = req.params;
+
+  const tag = await Tag.findOne({ name });
+
+  if (!tag)
+    return res.status(404).send({ status: "error", message: `Tag with name ${name} not found.` });
+
+  return res.status(200).send({ status: "success", data: tag });
+};
+
 export default {
   list,
   show,
   create,
   update,
   remove,
+  getTagByName,
 };

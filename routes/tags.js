@@ -9,6 +9,7 @@ import { validatePatchTag, validateTag } from "../models/tag.js";
 const router = express.Router();
 
 router.get("/", tagController.list);
+router.get("/byname/:name", tagController.getTagByName);
 router.get("/:id", validateObjectId, tagController.show);
 router.post("/", [admin, validate(validateTag)], tagController.create);
 router.patch("/:id", [admin, validateObjectId, validate(validatePatchTag)], tagController.update);
