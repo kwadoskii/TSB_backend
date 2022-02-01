@@ -32,7 +32,7 @@ router.post("/unfollow/:id", [auth, validateObjectId], userController.unfollowUs
 router.get("/followers", auth, userController.followersList);
 router.get("/following", auth, userController.followingUsers);
 
-// router.get("/:id", validateObjectId, userController.show);
+router.get("/byid/:id", validateObjectId, userController.show);
 router.get("/:username", userController.getProfileByUsername);
 router.post("/", validate(validateUser), userController.create); //register user
 router.patch("/:id", [auth, validate(validatePatchUser)], userController.update);

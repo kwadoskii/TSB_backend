@@ -5,6 +5,7 @@ import { SavedPost } from "../models/savedPost.js";
 import updateOptions from "../helpers/updateOptions.js";
 import { Reaction } from "../models/reaction.js";
 import { Comment } from "../models/comment.js";
+import { Tag } from "../models/tag.js";
 
 const authorFields = "firstname middlename lastname username email profileImage";
 const tagsFields = "-_id name";
@@ -12,7 +13,7 @@ dot.keepArray = true;
 
 const list = async (_, res) => {
   const posts = await Post.find()
-    .sort("createdAt")
+    .sort("-createdAt")
     .populate("author", authorFields)
     .populate("tags", tagsFields);
 
@@ -210,6 +211,45 @@ const unlikePost = async (req, res) => {
   return res.status(200).send({ status: "success", message: `Post unliked.` });
 };
 
+const getPostsByTagName = async (req, res) => {
+  const { name: tagName } = req.params;
+
+  const tagID = await (await Tag.findOne({ name: tagName }))._id;
+
+  const posts = await Post.find({ tags: tagID })
+    .sort("-views")
+    .populate("author", authorFields)
+    .populate("tags", tagsFields);
+
+  return res.status(200).send({ status: "success", data: posts });
+};
+
+const getPostBySlug = async (req, res) => {
+  const { slug } = req.params;
+
+  const post = await Post.findOneAndUpdate({ slug }, { $inc: { views: 1 } })
+    .populate("author", authorFields + " profileImage occupation location education joined")
+    .populate("tags", "-createdAt -updatedAt -description -image");
+
+  if (!post)
+    return res
+      .status(404)
+      .send({ status: "error", message: `Post with slug '${slug}' not found.` });
+
+  return res.status(200).send({ status: "success", data: post });
+};
+
+const moreFromAuthor = async (req, res) => {
+  const { id } = req.params;
+  const posts = await Post.find({ author: id })
+    .sort("-views -createdAt")
+    .limit(5)
+    .populate("author", authorFields)
+    .populate("tags", "name");
+
+  res.status(200).send({ status: "success", data: posts });
+};
+
 export default {
   list,
   show,
@@ -227,4 +267,7 @@ export default {
   postLikes,
   likePost,
   unlikePost,
+  getPostsByTagName,
+  getPostBySlug,
+  moreFromAuthor,
 };

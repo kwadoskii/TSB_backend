@@ -19,6 +19,9 @@ router.get("/search", postController.search);
 router.post("/save", [auth, validate(validateSavedPost)], postController.save); //save a post
 router.post("/like", [auth, validate(validateReaction)], postController.reaction); //like a post
 
+//more last 5 post from author
+router.get("/morefromauthor/:id", postController.moreFromAuthor);
+
 //like and unlike post
 router.post("/like/:id", [auth, validateObjectId], postController.likePost);
 router.post("/unlike/:id", [auth, validateObjectId], postController.unlikePost);
@@ -28,8 +31,12 @@ router.post("/comment", [auth, validate(validateComment)], postController.commen
 router.post("/comment/like", [auth, validate(validateCommentLike)], postController.likeComment);
 router.delete("/comment/:id", [auth, validateObjectId], postController.removeComment);
 
+//posts by tag for week, month, year, infinity and latest
+router.get("/getpostsbytagname/:name", postController.getPostsByTagName);
+
 //post details
 router.get("/:id", validateObjectId, postController.show);
+router.get("/slug/:slug", validateObjectId, postController.getPostBySlug);
 router.get("/:id/comments", validateObjectId, postController.postComments);
 router.get("/:id/likes", validateObjectId, postController.postLikes); //likes to a post
 
