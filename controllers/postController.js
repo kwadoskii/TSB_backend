@@ -34,7 +34,15 @@ const show = async (req, res) => {
 
 const create = async (req, res) => {
   const post = new Post({ ...req.body });
-  post.slug = req.body.title.toLowerCase().split(" ").join("-");
+  let str = "1234567890qwertyuiopasdfghjklzxcvbnm";
+  let lastStr = "";
+
+  for (let i = 0; i < 4; i++) {
+    lastStr = lastStr + str[Math.floor(Math.random() * str.length)];
+  }
+
+  post.slug =
+    req.body.title.toLowerCase().trim().replace(/\s/g, " ").split(" ").join("-") + "-" + lastStr;
   await post.save();
 
   return res.status(201).send({ status: "success", data: post });
@@ -214,7 +222,10 @@ const unlikePost = async (req, res) => {
 const getPostsByTagName = async (req, res) => {
   const { name: tagName } = req.params;
 
-  const tagID = await (await Tag.findOne({ name: tagName }))._id;
+  const tagID = await (await Tag.findOne({ name: tagName }))?._id;
+
+  if (!tagID)
+    return res.status(404).send({ status: "error", message: `Tag ${tagName} not found.` });
 
   const posts = await Post.find({ tags: tagID })
     .sort("-views")
