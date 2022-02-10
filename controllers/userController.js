@@ -289,7 +289,7 @@ const getProfileByUsername = async (req, res) => {
 const postReactions = async (req, res) => {
   const { _id: userId } = req.user;
 
-  const reactions = await Reaction.findOne({ userId })
+  const reactions = await Reaction.find({ userId })
     .populate("postId", "title")
     .select("-userId -createdAt -updatedAt -__v");
 
@@ -297,7 +297,7 @@ const postReactions = async (req, res) => {
     status: "success",
     data: {
       userId,
-      reactions: reactions?.postId || [],
+      reactions: reactions,
     },
   });
 };

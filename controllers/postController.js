@@ -95,6 +95,7 @@ const save = async (req, res) => {
   return res.status(200).send({ status: "success", message: `Post ${postId} saved.` });
 };
 
+//deprecated
 const reaction = async (req, res) => {
   const { userId, postId } = req.body;
   const likedBefore = await Reaction.findOneAndDelete({ userId, postId });
@@ -176,7 +177,7 @@ const postComments = async (req, res) => {
 
 const postLikes = async (req, res) => {
   const { id } = req.params;
-  const postComments = await Reaction.find({ postId: id }).select("-__v -updatedAt");
+  const postComments = await Reaction.findOne({ postId: id }).select("-__v -updatedAt -createdAt");
 
   return res.status(200).send({ status: "success", data: postComments });
 };
@@ -186,17 +187,16 @@ const likePost = async (req, res) => {
   const { _id: userId } = req.user;
 
   //if user has liked any post before
-  let likedAnyPost = await Reaction.findOne({ userId });
-  const postHasBeenLiked = likedAnyPost?.postId.filter((p) => p.toString() === postId);
+  let postLikes = await Reaction.findOne({ postId });
 
-  if (postHasBeenLiked && postHasBeenLiked.length !== 0)
+  const postHasBeenLiked = postLikes?.userId.some((u) => u.toString() === userId);
+
+  if (postHasBeenLiked)
     return res.status(403).send({ status: "error", message: "You already liked this post." });
 
-  !likedAnyPost
-    ? (likedAnyPost = new Reaction({ userId, postId }))
-    : likedAnyPost.postId.push(postId);
+  !postLikes ? (postLikes = new Reaction({ userId, postId })) : postLikes.userId.push(userId);
 
-  await likedAnyPost.save();
+  await postLikes.save();
   return res.status(200).send({ status: "success", message: `Post liked.` });
 };
 
@@ -204,18 +204,18 @@ const unlikePost = async (req, res) => {
   const { id: postId } = req.params;
   const { _id: userId } = req.user;
 
-  let liked = await Reaction.findOne({ userId });
-  if (!liked)
+  let postLikes = await Reaction.findOne({ postId });
+  if (!postLikes)
     return res.status(404).send({ status: "error", message: "You have not liked this post." });
 
-  const hasPostBeenLiked = liked.postId.filter((p) => p.toString() === postId);
+  const hasPostBeenLiked = postLikes.userId.some((u) => u.toString() === userId);
 
-  if (hasPostBeenLiked.length === 0)
+  if (!hasPostBeenLiked)
     return res.status(404).send({ status: "error", message: "You have not liked this post." });
 
-  liked.postId = liked.postId.filter((p) => p.toString() !== postId);
+  postLikes.userId = postLikes.userId.filter((u) => u.toString() !== userId);
 
-  await liked.save();
+  await postLikes.save();
   return res.status(200).send({ status: "success", message: `Post unliked.` });
 };
 
