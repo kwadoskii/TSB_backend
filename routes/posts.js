@@ -17,7 +17,7 @@ const router = express.Router();
 router.get("/", postController.list);
 router.get("/search", postController.search);
 router.post("/save", [auth, validate(validateSavedPost)], postController.save); //save a post
-router.post("/like", [auth, validate(validateReaction)], postController.reaction); //like a post
+router.post("/like", [auth, validate(validateReaction)], postController.reaction); //like a post (deprecated)
 
 //more last 5 post from author
 router.get("/morefromauthor/:id", postController.moreFromAuthor);
@@ -26,10 +26,14 @@ router.get("/morefromauthor/:id", postController.moreFromAuthor);
 router.post("/like/:id", [auth, validateObjectId], postController.likePost);
 router.post("/unlike/:id", [auth, validateObjectId], postController.unlikePost);
 
-router.get("/comment/:id", validateObjectId, postController.showComment);
-router.post("/comment", [auth, validate(validateComment)], postController.comment);
-router.post("/comment/like", [auth, validate(validateCommentLike)], postController.likeComment);
-router.delete("/comment/:id", [auth, validateObjectId], postController.removeComment);
+router.get("/comments/:id", validateObjectId, postController.showComment);
+router.post("/comments", [auth, validate(validateComment)], postController.comment);
+
+//like and unlike a comment
+router.post("/comments/like/:id", [auth, validateObjectId], postController.likeComment);
+router.post("/comments/unlike/:id", [auth, validateObjectId], postController.unlikeComment);
+
+router.delete("/comments/:id", [auth, validateObjectId], postController.removeComment);
 
 //posts by tag for week, month, year, infinity and latest
 router.get("/getpostsbytagname/:name", postController.getPostsByTagName);

@@ -139,22 +139,45 @@ const showComment = async (req, res) => {
 };
 
 const likeComment = async (req, res) => {
-  const { userId, commentId } = req.body;
+  const { id: commentId } = req.params;
+  const { _id: userId } = req.user;
+
   const comment = await Comment.findById(commentId);
 
-  const liked = comment.likes.filter((id) => userId === id.toString());
+  if (!comment)
+    return res
+      .status(404)
+      .send({ status: "error", message: `Comment with id ${commentId} not found.` });
 
-  if (liked.length !== 0) {
-    comment.likes = comment.likes.filter((id) => userId !== id.toString());
-    await comment.save();
+  const liked = comment.likes.some((id) => userId === id.toString());
 
-    return res.status(200).send({ status: "success", message: `Comment ${commentId} unliked.` });
-  }
+  if (liked) return res.status(403).send({ status: "error", message: "Comment already liked." });
 
   comment.likes.push(userId);
 
   await comment.save();
   return res.status(200).send({ status: "success", message: `Comment ${commentId} liked.` });
+};
+
+const unlikeComment = async (req, res) => {
+  const { id: commentId } = req.params;
+  const { _id: userId } = req.user;
+
+  const comment = await Comment.findById(commentId);
+
+  if (!comment)
+    return res
+      .status(404)
+      .send({ status: "error", message: `Comment with id ${commentId} not found.` });
+
+  const liked = comment.likes.some((id) => userId === id.toString());
+
+  if (!liked) return res.status(403).send({ status: "error", message: "Comment not liked." });
+
+  comment.likes = comment.likes.filter((id) => id.toString() !== userId);
+  await comment.save();
+
+  res.status(200).send({ status: "success", message: "Comment unliked." });
 };
 
 const removeComment = async (req, res) => {
@@ -170,7 +193,11 @@ const removeComment = async (req, res) => {
 
 const postComments = async (req, res) => {
   const { id } = req.params;
-  const postComments = await Comment.find({ postId: id }).select("-__v -updatedAt");
+
+  const postComments = await Comment.find({ postId: id })
+    .select("-__v -updatedAt -postId")
+    .populate("userId", "username firstname lastname profileImage")
+    .sort("-createdAt");
 
   return res.status(200).send({ status: "success", data: postComments });
 };
@@ -281,4 +308,5 @@ export default {
   getPostsByTagName,
   getPostBySlug,
   moreFromAuthor,
+  unlikeComment,
 };
