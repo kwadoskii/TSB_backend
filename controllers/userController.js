@@ -305,32 +305,30 @@ const postReactions = async (req, res) => {
 const savedPosts = async (req, res) => {
   const { _id: userId } = req.user;
 
-  const savedPosts = await SavedPost.findOne({ userId })
-    .select("-__v -createdAt -updatedAt")
+  const savedPosts = await SavedPost.find({ userId })
+    .select("-__v -createdAt -updatedAt -userId")
     .populate({
       path: "postId",
-      select: "-__v -updatedAt",
+      select: "title slug tags views",
       populate: { path: "author tags", select: "name firstname lastname username profileImage" },
     });
 
-  return res.status(200).send({ status: "success", data: savedPosts?.postId || [] });
+  return res.status(200).send({ status: "success", data: savedPosts });
 };
 
 const savePost = async (req, res) => {
   const { id: postId } = req.params;
   const { _id: userId } = req.user;
 
-  let savedAnyPost = await SavedPost.findOne({ userId });
-  const postHasBeenSaved = savedAnyPost?.postId.filter((p) => p.toString() === postId);
+  let saved = await SavedPost.findOne({ postId });
+  const postHasBeenSaved = saved?.userId.some((u) => u.toString() === userId);
 
-  if (postHasBeenSaved && postHasBeenSaved.length !== 0)
+  if (postHasBeenSaved)
     return res.status(403).send({ status: "error", message: "You already saved this post." });
 
-  !savedAnyPost
-    ? (savedAnyPost = new SavedPost({ userId, postId }))
-    : savedAnyPost.postId.push(postId);
+  !saved ? (saved = new SavedPost({ userId, postId })) : saved.userId.push(userId);
+  await saved.save();
 
-  await savedAnyPost.save();
   res.status(200).send({ status: "success", message: "Post saved." });
 };
 
@@ -338,17 +336,16 @@ const unsavePost = async (req, res) => {
   const { id: postId } = req.params;
   const { _id: userId } = req.user;
 
-  let saved = await SavedPost.findOne({ userId });
+  let saved = await SavedPost.findOne({ postId });
   if (!saved)
     return res.status(404).send({ status: "error", message: "You have not saved this post." });
 
-  const hasPostBeenSaved = saved.postId.filter((p) => p.toString() === postId);
+  const hasPostBeenSaved = saved.userId.some((u) => u.toString() === userId);
 
-  if (hasPostBeenSaved.length === 0)
+  if (!hasPostBeenSaved)
     return res.status(404).send({ status: "error", message: "You have not saved this post." });
 
-  saved.postId = saved.postId.filter((p) => p.toString() !== postId);
-
+  saved.userId = saved.userId.filter((u) => u.toString() !== userId);
   await saved.save();
 
   return res.status(200).send({ status: "success", message: "Post unsaved." });

@@ -43,6 +43,7 @@ router.get("/:id", validateObjectId, postController.show);
 router.get("/slug/:slug", validateObjectId, postController.getPostBySlug);
 router.get("/:id/comments", validateObjectId, postController.postComments);
 router.get("/:id/likes", validateObjectId, postController.postLikes); //likes to a post
+router.get("/:id/saves", validateObjectId, postController.postSaves); // post saves
 
 // add auth validation middleware here
 router.post("/", [auth, validate(validatePost)], postController.create);

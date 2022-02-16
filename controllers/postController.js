@@ -288,6 +288,15 @@ const moreFromAuthor = async (req, res) => {
   res.status(200).send({ status: "success", data: posts });
 };
 
+const postSaves = async (req, res) => {
+  const { id: postId } = req.params;
+  const postSaves = await SavedPost.findOne({ postId })
+    .select("-__v -updatedAt -createdAt")
+    .populate("userId", "username firstname lastname email");
+
+  return res.status(200).send({ status: "success", data: postSaves });
+};
+
 export default {
   list,
   show,
@@ -309,4 +318,5 @@ export default {
   getPostBySlug,
   moreFromAuthor,
   unlikeComment,
+  postSaves,
 };
