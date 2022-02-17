@@ -110,11 +110,13 @@ const reaction = async (req, res) => {
 };
 
 const comment = async (req, res) => {
-  const { userId, postId, comment } = req.body;
-  const newComment = new Comment({ userId, postId, comment });
+  const { postId, comment } = req.body;
+  const { _id: userId } = req.user;
 
+  const newComment = new Comment({ userId, postId, comment });
   await newComment.save();
-  return res.status(201).send({ status: "success", message: "Comment added." });
+
+  return res.status(201).send({ status: "success", data: newComment, message: "Comment added." });
 };
 
 const showComment = async (req, res) => {

@@ -20,7 +20,6 @@ const Comment = mongoose.model("Comment", commentSchema);
 const validateComment = (data, options) => {
   const schema = Joi.object({
     postId: Joi.objectId().required(),
-    userId: Joi.objectId().required(),
     comment: Joi.string().required().max(500).label("Comment").trim(),
     likes: Joi.array().items(Joi.objectId()),
   });
