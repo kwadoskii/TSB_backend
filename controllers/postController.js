@@ -74,10 +74,11 @@ const search = async (req, res) => {
   const { q } = req.query;
 
   const posts = await Post.find({
-    $or: [{ title: { $regex: ".*" + q + ".*" } }, { content: { $regex: ".*" + q + ".*" } }],
+    $or: [{ title: new RegExp(q, "gi") }, { content: new RegExp(q, "gi") }],
   })
     .populate("author", authorFields)
-    .populate("tags", tagsFields);
+    .populate("tags", tagsFields)
+    .sort("-createdAt");
 
   return res.status(200).send({ status: "success", data: posts });
 };
