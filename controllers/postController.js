@@ -132,7 +132,7 @@ const showComment = async (req, res) => {
         select: "username",
       },
     })
-    .populate("userId", "firstname lastname email username");
+    .populate("userId", "firstname lastname email username profileImage");
 
   if (!comment)
     return res.status(404).send({ status: "error", message: `Comment with ID ${id} not found.` });
