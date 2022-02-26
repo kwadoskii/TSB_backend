@@ -52,7 +52,7 @@ const create = async (req, res) => {
 };
 
 const update = async (req, res) => {
-  const { id } = req.params;
+  const id = req.params.id || req.user._id;
 
   if (req.body.password) {
     const salt = await bcrypt.genSalt();

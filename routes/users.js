@@ -35,7 +35,8 @@ router.get("/following", auth, userController.followingUsers);
 router.get("/byid/:id", validateObjectId, userController.show);
 router.get("/:username", userController.getProfileByUsername);
 router.post("/", validate(validateUser), userController.create); //register user
-router.patch("/:id", [auth, validate(validatePatchUser)], userController.update);
+router.patch("/me", [auth, validate(validatePatchUser)], userController.update);
+router.patch("/:id", [auth, validateObjectId, validate(validatePatchUser)], userController.update);
 router.delete("/:id", [auth, validateObjectId], userController.remove);
 
 export default router;

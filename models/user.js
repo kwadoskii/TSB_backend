@@ -96,7 +96,7 @@ const validateUser = (user, options) => {
 const validatePatchUser = (user, options) => {
   const schema = Joi.object({
     firstname: Joi.string().min(2).max(255).label("Firstname").trim(),
-    middlename: Joi.string().min(2).max(255).trim().label("Middlename"),
+    middlename: Joi.string().min(2).max(255).trim().allow(null).label("Middlename"),
     lastname: Joi.string().min(2).max(255).label("Lastname").trim(),
     username: Joi.string().min(5).max(255).label("Username").trim().lowercase(),
     email: Joi.string().min(5).max(512).trim().email().label("Email"),
