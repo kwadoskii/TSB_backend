@@ -7,7 +7,7 @@ const commentSchema = new mongoose.Schema(
   {
     postId: { type: mongoose.Schema.Types.ObjectId, ref: "Post", required: true },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    comment: { type: String, required: true, maxlength: 500 },
+    comment: { type: String, required: true, maxlength: 2500 },
     likes: { type: [mongoose.Schema.Types.ObjectId], ref: "User" },
   },
   { timestamps: true }
@@ -20,7 +20,7 @@ const Comment = mongoose.model("Comment", commentSchema);
 const validateComment = (data, options) => {
   const schema = Joi.object({
     postId: Joi.objectId().required(),
-    comment: Joi.string().required().max(500).label("Comment").trim(),
+    comment: Joi.string().required().max(2500).label("Comment").trim(),
     likes: Joi.array().items(Joi.objectId()),
   });
 
