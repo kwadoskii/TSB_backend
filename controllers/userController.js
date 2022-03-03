@@ -54,10 +54,12 @@ const create = async (req, res) => {
 const update = async (req, res) => {
   const id = req.params.id || req.user._id;
 
-  if (req.body.password) {
-    const salt = await bcrypt.genSalt();
-    req.body.password = await bcrypt.hash(req.body.password, salt);
-  }
+  // if (req.body.password) {
+  //   const salt = await bcrypt.genSalt();
+  //   req.body.password = await bcrypt.hash(req.body.password, salt);
+  // }
+
+  delete req.body.password;
 
   const user = await User.findByIdAndUpdate(id, { ...dot.dot(req.body) }, updateOptions).select(
     "-password -createdAt -updatedAt -__v"
@@ -219,7 +221,7 @@ const me = async (req, res) => {
   res.status(200).send({ status: "success", data: user });
 };
 
-const auth = async (req, res) => {
+const login = async (req, res) => {
   let user = await User.findOne({
     $or: [{ username: req.body.username }, { email: req.body.username }],
   });
@@ -251,6 +253,26 @@ const auth = async (req, res) => {
       token,
     },
   });
+};
+
+const changePassword = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  const { _id: userId } = req.user;
+
+  const user = await User.findById(userId);
+  if (!user)
+    return res.status(404).send({ status: "error", message: `User with id ${userId} not found.` });
+
+  const passwordIsCorrect = await bcrypt.compare(currentPassword, user.password);
+  if (!passwordIsCorrect)
+    return res.status(403).send({ status: "error", message: "Wrong current password provided." });
+
+  const salt = await bcrypt.genSalt();
+  const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+  await User.findByIdAndUpdate(userId, { password: hashedPassword });
+
+  res.status(200).send({ status: "success", message: "Password changed successfully." });
 };
 
 const getProfileByUsername = async (req, res) => {
@@ -394,7 +416,7 @@ export default {
   followingUsers,
   followersList,
   me,
-  auth,
+  login,
   getProfileByUsername,
   postReactions,
   savedPosts,
@@ -403,4 +425,5 @@ export default {
   getTotalUserCount,
   postsByUser,
   commentsByUser,
+  changePassword,
 };

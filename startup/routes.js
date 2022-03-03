@@ -5,7 +5,7 @@ import tags from "../routes/tags.js";
 import status from "../routes/status.js";
 import users from "../routes/users.js";
 import posts from "../routes/posts.js";
-import login from "../routes/login.js";
+import auth from "../routes/auth.js";
 import register from "../routes/register.js";
 
 export default function (app) {
@@ -16,7 +16,7 @@ export default function (app) {
   app.use("/api/tags", tags);
   app.use("/api/users", users);
   app.use("/api/posts", posts);
-  app.use("/api/login", login);
+  app.use("/api/auth", auth);
   app.use("/api/register", register);
 
   app.use(error);

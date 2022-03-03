@@ -132,4 +132,13 @@ const validateAuth = (data, options) => {
   return schema.validate(data, options);
 };
 
-export { User, userShema, validatePatchUser, validateUser, validateAuth };
+const validateChangePassword = (data, options) => {
+  const schema = Joi.object({
+    currentPassword: Joi.string().min(2).max(1024).trim().required().label("Current Password"),
+    newPassword: Joi.string().min(2).max(1024).trim().required().label("New Password"),
+  });
+
+  return schema.validate(data, options);
+};
+
+export { User, userShema, validatePatchUser, validateUser, validateAuth, validateChangePassword };
