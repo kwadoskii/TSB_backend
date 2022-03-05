@@ -382,11 +382,20 @@ const getTotalUserCount = async (_, res) => {
 const postsByUser = async (req, res) => {
   const { _id: userId } = req.user;
 
-  const posts = await Post.find({ author: userId })
+  let posts = await Post.find({ author: userId })
     .populate({ path: "tags", select: "name" })
     .populate("author", "firstname lastname username profileImage")
     .select("-updatedAt -__v")
-    .sort("-createdAt");
+    .sort("-createdAt")
+    .lean();
+
+  for (const post of posts) {
+    let likes = await Reaction.findOne({ postId: post._id }).select("userId").lean();
+    let commentsCount = await Comment.find({ postId: post._id }).count();
+
+    post.likesCount = likes.userId.length;
+    post.commentsCount = commentsCount;
+  }
 
   return res.status(200).send({ status: "success", data: posts });
 };
