@@ -393,7 +393,8 @@ const postsByUser = async (req, res) => {
     let likes = await Reaction.findOne({ postId: post._id }).select("userId").lean();
     let commentsCount = await Comment.find({ postId: post._id }).count();
 
-    post.likesCount = likes.userId.length;
+    post.likesCount = likes?.userId.length || 0;
+
     post.commentsCount = commentsCount;
   }
 
