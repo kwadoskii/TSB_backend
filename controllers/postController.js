@@ -33,7 +33,9 @@ const show = async (req, res) => {
 };
 
 const create = async (req, res) => {
-  const post = new Post({ ...req.body });
+  const { _id: author } = req.user;
+  const post = new Post({ ...req.body, author });
+
   let str = "1234567890qwertyuiopasdfghjklzxcvbnm";
   let lastStr = "";
 
@@ -42,7 +44,9 @@ const create = async (req, res) => {
   }
 
   post.slug =
-    req.body.title.toLowerCase().trim().replace(/\s/g, " ").split(" ").join("-") + "-" + lastStr;
+    req.body.title.toLowerCase().trim().replace(/\s/g, " ").replace(/:/g, "").split(" ").join("-") +
+    "-" +
+    lastStr;
   await post.save();
 
   return res.status(201).send({ status: "success", data: post });
