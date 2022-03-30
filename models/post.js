@@ -26,8 +26,7 @@ const validatePost = (post, options) => {
     title: Joi.string().max(80).trim().required(),
     tags: Joi.array().max(4).min(1).items(Joi.objectId()),
     content: Joi.string().required().trim(),
-    banner: Joi.string().trim().uri({ allowRelative: true }),
-    // author: Joi.objectId().required(),
+    banner: Joi.string().trim().uri({ allowRelative: true }).allow(""),
   });
 
   return schema.validate(post, options);
@@ -38,8 +37,7 @@ const validatePostPatch = (post, options) => {
     title: Joi.string().max(80).trim(),
     tags: Joi.array().max(4).min(1).items(Joi.objectId()),
     content: Joi.string().trim(),
-    banner: Joi.string().trim().uri({ allowRelative: true }),
-    // author: Joi.objectId(),
+    banner: Joi.string().trim().uri({ allowRelative: true }).allow(""),
   });
 
   return schema.validate(post, options);
