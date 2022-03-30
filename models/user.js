@@ -5,9 +5,9 @@ import jwt from "jsonwebtoken";
 
 const userShema = new mongoose.Schema(
   {
-    firstname: { type: String, required: true, minlength: 2, maxlength: 255 },
-    middlename: { type: String, minlength: 2, maxlength: 255 },
-    lastname: { type: String, required: true, minlength: 2, maxlength: 255 },
+    firstname: { type: String, required: true, maxlength: 255 },
+    middlename: { type: String, maxlength: 255 },
+    lastname: { type: String, required: true, maxlength: 255 },
     username: {
       type: String,
       required: true,
@@ -16,16 +16,16 @@ const userShema = new mongoose.Schema(
       unique: true,
       lowercase: true,
     },
-    email: { type: String, required: true, minlength: 5, maxlength: 512, unique: true },
-    password: { type: String, required: true, minlength: 2, maxlength: 1024 },
-    bio: { type: String, minlength: 2, maxlength: 1024 },
+    email: { type: String, required: true, maxlength: 512, unique: true },
+    password: { type: String, required: true, maxlength: 1024 },
+    bio: { type: String, maxlength: 1024 },
     gender: { type: String, enum: ["F", "M"], required: true },
     profileImage: {
       type: String,
       maxlength: 250,
       default: "https://www.shareicon.net/data/512x512/2016/07/26/802043_man_512x512.png",
     },
-    location: { type: String, minlength: 2, maxlength: 50 },
+    location: { type: String, maxlength: 50 },
     website: { type: String, maxlength: 100 },
     occupation: {
       position: { type: String, maxlength: 100 },
@@ -101,7 +101,7 @@ const validatePatchUser = (user, options) => {
     username: Joi.string().min(5).max(255).label("Username").trim().lowercase(),
     email: Joi.string().min(5).max(512).trim().email().label("Email"),
     password: Joi.string().min(2).max(1024).label("Password").trim(),
-    bio: Joi.string().min(2).max(1024).trim().label("Bio").trim(),
+    bio: Joi.string().min(2).max(1024).trim().label("Bio").trim().allow(""),
     gender: Joi.string().label("Gender").trim(),
     profileImage: Joi.string().uri().max(250).label("Profile Image").trim(),
     location: Joi.string().max(50).trim().allow(""),
