@@ -5,7 +5,12 @@ import referrenceValidator from "mongoose-referrence-validator";
 const savedPostSchema = new mongoose.Schema(
   {
     postId: { type: mongoose.Schema.Types.ObjectId, ref: "Post", required: true },
-    userId: { type: [mongoose.Schema.Types.ObjectId], ref: "User", required: true },
+    userId: [
+      {
+        user: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
+        savedDate: { type: Date, default: new Date() },
+      },
+    ],
   },
   { timestamps: true }
 );
