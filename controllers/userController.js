@@ -1,6 +1,8 @@
 import bcrypt from "bcrypt";
 import pick from "lodash/pick.js";
 import dot from "dot-object";
+import crypto from "crypto";
+import nodemailer from "nodemailer";
 
 import updateOptions from "../helpers/updateOptions.js";
 import { User } from "../models/user.js";
@@ -13,6 +15,7 @@ import { Reaction } from "../models/reaction.js";
 import { SavedPost } from "../models/savedPost.js";
 
 const userFields = "firstname middlename lastname username email profileImage";
+const salt = await bcrypt.genSalt();
 
 const list = async (_, res) => {
   const users = await User.find().sort("username").select("-password  -createdAt -updatedAt -__v");
@@ -39,7 +42,6 @@ const create = async (req, res) => {
       .send({ status: "error", message: "Username or email already registered." });
 
   user = new User({ ...req.body });
-  const salt = await bcrypt.genSalt();
   user.password = await bcrypt.hash(req.body.password, salt);
   user = await user.save();
 
@@ -55,7 +57,6 @@ const update = async (req, res) => {
   const id = req.params.id || req.user._id;
 
   // if (req.body.password) {
-  //   const salt = await bcrypt.genSalt();
   //   req.body.password = await bcrypt.hash(req.body.password, salt);
   // }
 
@@ -267,7 +268,6 @@ const changePassword = async (req, res) => {
   if (!passwordIsCorrect)
     return res.status(403).send({ status: "error", message: "Wrong current password provided." });
 
-  const salt = await bcrypt.genSalt();
   const hashedPassword = await bcrypt.hash(newPassword, salt);
 
   await User.findByIdAndUpdate(userId, { password: hashedPassword });
@@ -426,6 +426,104 @@ const commentsByUser = async (req, res) => {
   return res.status(200).send({ status: "success", data: comments });
 };
 
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user)
+    return res
+      .status(404)
+      .send({ status: "error", message: `User with email ${email} not found.` });
+
+  const transport = nodemailer.createTransport({
+    service: "Gmail",
+    secure: true,
+    auth: {
+      user: process.env.GMAIL_USERNAME,
+      pass: process.env.GMAIL_PASSWORD,
+    },
+  });
+
+  const sendPasswordResetEmail = () => {
+    try {
+      transport.sendMail({
+        to: email,
+        subject: "TSB - Password Reset",
+        html: `
+      <p>Dear ${user.firstname},</p> 
+      <p>Your password reset was successfull, please click on the link below to create a new password.</p>
+      <br />
+      <a href:"${process.env.FE_URL}/reset/${user.resetPasswordToken}">${
+          process.env.FE_URL
+        }/reset/${user.resetPasswordToken}</a>    
+      <br />
+      <p>If this was not initiated by you, contact our support on support@tsb.com immediately for assistance.</p>
+      <p>NB: The above link expires on ${new Date(
+        user.resetPasswordExpiry
+      ).toDateString()}, at ${new Date(user.resetPasswordExpiry).toTimeString()}`,
+      });
+
+      return res.send({
+        status: "success",
+        message: `Password reset link has been sent to ${email}`,
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send({ status: "error", message: "Could not send email." });
+    }
+  };
+
+  //token is still valid
+  if (user.resetPasswordToken && new Date(user.resetPasswordExpiry) > Date.now())
+    return sendPasswordResetEmail();
+
+  const resetPasswordToken = crypto.randomBytes(16).toString("hex");
+  user.resetPasswordToken = resetPasswordToken;
+  user.resetPasswordExpiry = Date.now() + 3600000;
+
+  await User.findByIdAndUpdate(user._id, { ...user }, { runValidators: false, context: "query" });
+
+  return sendPasswordResetEmail();
+};
+
+const resetPassword = async (req, res) => {
+  const { resetPasswordToken, password } = req.body;
+  const user = await User.findOne({ resetPasswordToken, resetPasswordExpiry: { $gt: Date.now() } });
+
+  if (!user)
+    return res
+      .status(404)
+      .send({ status: "error", message: "Password reset token not found or is expired!" });
+
+  const hashedPassword = await bcrypt.hash(password, salt);
+
+  const token = user.generateAuthToken();
+  user.lastLogin = new Date();
+  user.loginCount++;
+  user.password = hashedPassword;
+  user.resetPasswordToken = "";
+  user.resetPasswordExpiry = "";
+
+  delete (await User.findByIdAndUpdate(user._id, { ...user }, { runValidators: false }));
+
+  return res.status(200).send({
+    status: "success",
+    message: "Password has been reset.",
+    data: {
+      user: {
+        _id: user._id,
+        firstname: user.firstname,
+        middlename: user.middlename,
+        lastname: user.lastname,
+        email: user.email,
+        username: user.username,
+      },
+      token,
+    },
+  });
+};
+
 export default {
   list,
   show,
@@ -450,4 +548,6 @@ export default {
   postsByUser,
   commentsByUser,
   changePassword,
+  forgotPassword,
+  resetPassword,
 };

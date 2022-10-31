@@ -23,7 +23,8 @@
     "lodash": "^4.17.21",
     "mongoose": "^6.0.10",
     "mongoose-referrence-validator": "^1.0.0",
-    "mongoose-unique-validator": "^3.0.0"
+    "mongoose-unique-validator": "^3.0.0",
+    "nodemailer": "^6.8.0"
   },
   "type": "module"
 }
