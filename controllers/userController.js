@@ -454,9 +454,11 @@ const forgotPassword = async (req, res) => {
       <p>Dear ${user.firstname},</p> 
       <p>Your password reset was successfull, please click on the link below to create a new password.</p>
       <br />
-      <a href:"${process.env.FE_URL}/reset/${user.resetPasswordToken}">${
-          process.env.FE_URL
-        }/reset/${user.resetPasswordToken}</a>    
+      <a href=${process.env.FE_URL}/reset/${
+          user.resetPasswordToken
+        } target="_blank" rel="noopener noreferrer">${process.env.FE_URL}/reset/${
+          user.resetPasswordToken
+        }</a>    
       <br />
       <p>If this was not initiated by you, contact our support on support@tsb.com immediately for assistance.</p>
       <p>NB: The above link expires on ${new Date(
